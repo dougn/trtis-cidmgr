@@ -1,0 +1,5 @@
+/build
+*.pyc
+*.pyo
+__cache__
+*.env

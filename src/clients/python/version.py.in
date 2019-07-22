@@ -1,0 +1,13 @@
+__version__ = "${PROJECT_VERSION}"
+_parts=__version__.split()
+__version_info__ = tuple(int(x,10) if x.isdigit() else x for x in _parts)
+__author__ = 'Doug Napoleone'
+__copyright__ = 'Copyright (c) 2019, Doug Napoleone. All rights reserved.'
+__email__ = 'doug.napoleone+trtis_cidmgr@gmail.com'
+__all__ = [
+    '__version__',
+    '__version_info__',
+    '__author__',
+    '__email__',
+    '__copyright__'
+]
