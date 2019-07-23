@@ -23,7 +23,7 @@ Will have the same results as the tensorrt-inference-server stateful client
 [simple_sequence_client.py](https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/clients/python/simple_sequence_client.py)
 
 ```
-from trtis_cidmgr.context import StatefulContext, InferContext, InferRequestHeader
+from trtis_cidmgr import StatefulContext, InferRequestHeader
 from numpy import full, int32
 
 values = [0, 11, 7, 5, 3, 2, 0, 1]
@@ -36,7 +36,7 @@ with StatefulContext('localhost:8001', 'simple_sequence') as ctx:
     for tensor, flags in tensors:
         result = ctx.run(
             {'INPUT' : (tensor,)}, 
-            {'OUTPUT': InferContext.ResultFormat.RAW },
+            {'OUTPUT': StatefulContext.ResultFormat.RAW },
             flags=flags)
         print(result['OUTPUT'][0][0])
 ```
