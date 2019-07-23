@@ -1,10 +1,15 @@
-# Copyright (c) 2019, Doug Napoleone. All rights reserved.
-name: "${MODEL_NAME}"
+name: "simple_sequence"
 platform: "custom"
-max_batch_size: 1
-default_model_filename: "${MODEL_LIBRARY}"
+max_batch_size: 8
+default_model_filename: "${SEQUENCE_LIBRARY}"
+parameters [
+  {
+    key: "execute_delay_ms"
+    value: { string_value: "100" }
+  }
+]
 sequence_batching {
-  max_sequence_idle_microseconds: 3600000000
+  max_sequence_idle_microseconds: 5000000
   control_input [
     {
       name: "START"
@@ -28,27 +33,22 @@ sequence_batching {
 }
 input [
   {
-    name: "CODE"
-    data_type: TYPE_INT8
-    dims: [ 1 ]
-  },
-  {
-    name: "CORRELATION_ID"
-    data_type: TYPE_UINT64
+    name: "INPUT"
+    data_type: TYPE_INT32
     dims: [ 1 ]
   }
 ]
 output [
   {
     name: "OUTPUT"
-    data_type: TYPE_UINT64
+    data_type: TYPE_INT32
     dims: [ 1 ]
   }
 ]
 instance_group [
   {
     kind: KIND_CPU
-    count: 1
+    count: 25
   }
 ]
 

@@ -25,12 +25,57 @@ This will generate the following directory tree:
             * [config.pbtxt](src/config.pbtxt.in)
             * 1/
                 * libcidmgr.so
+        * simple_sequence/ *- test simple sequence model*
+            * [config.pbtxt](test/simple_sequence_config.pbtxt.in)
+            * 1/
+                * libsequence.so *- tensorrt-inference-server custom sequence backend*
     * lib/
         * libcidmgr.so *- custom backend*
-        * libcidmgr_client.a *- client helper library*
+        * libcrequest.so *- tensorrt-inference-server client library*
+        * libcidmgr_client.a *- cidmgr client helper library*
+        * libsequence.so *- tensorrt-inference-server custom sequence backend*
     * include/
         * cidmgr_client.h
         * cidmgr_codes.h
     * wheelhouse/
         * trtis_cidmgr-0.0.1-py2.py3-none-any.whl
         * tensorrtserver-1.5.0.dev0-py2.py3-none-manylinux1_x86_64.whl
+
+## Testing
+
+Running the trtserver
+
+```
+$ cd tensorrt-inference-server/builddir/trtis/bin
+$ export LD_LIBRARY_PATH=../lib
+$ ./trtserver --model-store ../../../../trtid_cidmgr/build/install/model
+```
+
+Running the simple_sequence custom backend and test with correlation id's from cidmgr
+
+```
+$ cd trtis-cidmgr/test
+$ source ../build/install/3.7.env/bin/activate
+$ cd test
+$ python ./doug_simple_sequence.py
+Have Correlation Id: 1
+Have Correlation Id: 2
+streaming : non-streaming
+[0] 0 : 100
+[1] 11 : 89
+[2] 18 : 82
+[3] 23 : 77
+[4] 26 : 74
+[5] 28 : 72
+[6] 28 : 72
+[7] 29 : 71
+Removing managed Correlation ID: 2
+Removing managed Correlation ID: 1
+```
+
+Running 50 simple_sequence model clients in parallel with correlation id's from cidmgr
+```
+$ cd trtis-cidmgr/test
+$ source ../build/install/3.7.env/bin/activate
+$ python ./runmany.py
+```

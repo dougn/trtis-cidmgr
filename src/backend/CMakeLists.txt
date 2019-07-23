@@ -30,15 +30,19 @@ set(CODES_POSTFIX "} CIDMGR_Code; }}}}")
 
 set(MODEL_NAME "cidmgr")
 if(WIN32)
+set(SEQUENCE_LIBRARY "sequence.dll")
 set(MODEL_LIBRARY "cidmgr.dll")
 elseif(APPLE)
+set(SEQUENCE_LIBRARY "libsequence.dylib")
 set(MODEL_LIBRARY "libcidmgr.dylib")
 else()
+set(SEQUENCE_LIBRARY "libsequence.so")
 set(MODEL_LIBRARY "libcidmgr.so")
 endif()
 
 configure_file(../codes.in cidmgr.h)
 configure_file(../config.pbtxt.in config.pbtxt)
+configure_file("${CMAKE_SOURCE_DIR}/test/simple_sequence_config.pbtxt.in" sequence/config.pbtxt)
 
 add_library(
   cidmgr SHARED
@@ -60,18 +64,29 @@ endif()
 target_include_directories(cidmgr PRIVATE ${TRTIS_CUSTOM_BACKEND_INCLUDE} ${CMAKE_CURRENT_BINARY_DIR})
 
 install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/config.pbtxt"
-    DESTINATION "${CMAKE_BINARY_DIR}/install/model/cidmgr/config.pbtxt"
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/config.pbtxt"
+  DESTINATION "${CMAKE_BINARY_DIR}/install/model/cidmgr/"
 )
 install(
-    TARGETS cidmgr
-    DESTINATION "${CMAKE_BINARY_DIR}/install/model/cidmgr/1/"
+  TARGETS cidmgr
+  DESTINATION "${CMAKE_BINARY_DIR}/install/model/cidmgr/1/"
 )
 install(
-    TARGETS cidmgr
-    LIBRARY DESTINATION "${CMAKE_BINARY_DIR}/install/lib/"
+  TARGETS cidmgr
+  LIBRARY DESTINATION "${CMAKE_BINARY_DIR}/install/lib/"
 )
-
+install(
+  FILES "${CMAKE_CURRENT_BINARY_DIR}/sequence/config.pbtxt"
+  DESTINATION "${CMAKE_BINARY_DIR}/install/model/simple_sequence/"
+)
+install(
+  FILES "${TRTIS_CUSTOM_BACKEND_LIBDIR}/${SEQUENCE_LIBRARY}"
+  DESTINATION "${CMAKE_BINARY_DIR}/install/model/simple_sequence/1/"
+)
+install(
+  FILES "${TRTIS_CUSTOM_BACKEND_LIBDIR}/${SEQUENCE_LIBRARY}"
+  DESTINATION "${CMAKE_BINARY_DIR}/install/lib/"
+)
 
 
 
