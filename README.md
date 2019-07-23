@@ -22,9 +22,9 @@ This will generate the following directory tree:
     * 3.5.env/ *- virtualenv with the trtis_cidmgr package and all dependencies*
     * model/ *- trtserver [model repository](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/model_repository.html)*
         * cidmgr/
-        * config.pbtxt
-        * 1/
-            * libcidmgr.so
+            * config.pbtxt
+            * 1/
+                * libcidmgr.so
     * lib/
         * libcidmgr.so *- custom backend*
         * libcidmgr_client.a *- client helper library*
