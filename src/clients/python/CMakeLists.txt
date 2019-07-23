@@ -17,6 +17,7 @@ set(TRTIS_CIDMGR_WHEEL "trtis_cidmgr-${PROJECT_VERSION}-py2.py3-none-any.whl")
 file(COPY trtis_cidmgr DESTINATION .)
 configure_file(../../config.pbtxt.in trtis_cidmgr/config.pbtxt.in)
 configure_file(../../codes.in trtis_cidmgr/codes.py)
+configure_file(version.py.in version.py)
 configure_file(version.py.in trtis_cidmgr/version.py)
 configure_file(setup.py setup.py COPYONLY)
 configure_file(../../../README.md README.md COPYONLY)
@@ -25,7 +26,6 @@ file(GLOB_RECURSE TRTIS_CIDMGR_DEPS
     "*.py"
     "*.in"
     "../../*.in"
-    "trtis/config.pbtxt.in"
 )
 
 add_custom_command(

@@ -32,7 +32,7 @@ import os
 import sys
 from builtins import range
 from tensorrtserver.api import *
-from trtis_cidmgr.client import ManagedContext
+from trtis_cidmgr import CIDMgrContext, StatefulContext
 
 FLAGS = None
 
@@ -106,9 +106,9 @@ if __name__ == '__main__':
     #ctx1 = InferContext(FLAGS.url, protocol, model_name, model_version,
     #                    correlation_id=correlation_id1, verbose=FLAGS.verbose, streaming=False)
 
-    with ManagedContext(FLAGS.url, model_name, model_version, 
+    with StatefulContext(FLAGS.url, model_name, model_version, 
         verbose=FLAGS.verbose, streaming=True
-        ) as ctx0, ManagedContext(FLAGS.url, model_name, model_version, 
+        ) as ctx0, StatefulContext(FLAGS.url, model_name, model_version, 
         verbose=FLAGS.verbose, streaming=False) as ctx1:
 
         # Now send the inference sequences..
@@ -166,3 +166,5 @@ if __name__ == '__main__':
             if i < len(values):
                 seq0_expected += values[i]
                 seq1_expected -= values[i]
+        print("Active Context IDs: "+str(ctx0.cidmgr.active()))
+        print("Peak Context IDs:   "+str(ctx0.cidmgr.peak()))

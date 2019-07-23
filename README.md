@@ -2,11 +2,58 @@
  Custom backend and client libraries for the NVIDIA TensorRT-Inference-Server to manage unique Correlation ID's
 
 The [NNIDIA TensorRT Inference Server](https://github.com/NVIDIA/tensorrt-inference-server) has an issue with [stateful models](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/models_and_schedulers.html#stateful-models).
-The client API requires specifying a Correlaiton ID (a.k.a. Instance ID), which must be unique to the state. So if you are performing multiple inferences in parallel which have unique state, you need a unique id for each. It is up to the multiple clients (which may be on different machines) to coordinate the Correlation ID management. This is something the inference server should provide, as it is already a coordination point.
+The client API requires specifying a Correlation ID (a.k.a. Instance ID), which must be unique to the state. So if you are performing multiple inferences in parallel which have unique state, you need a unique id for each. It is up to the multiple clients (which may be on different machines) to coordinate the Correlation ID management. This is something the inference server should provide, as it is already a coordination point.
 
-This custom backend and helper clients use the inference server framework to manage the distrobution and management of unique correlation id's for clients. The backend is it's self a stateful model holding a registry of in use correlation id's. Clients send a simple tensor to this backend and get back a dimension [1] tensor containing a new unique correlaiton id for use with another stateful model.
+
+This custom backend and helper clients use the inference server framework to manage the distribution and management of unique correlation id's for clients. The backend is it's self a stateful model holding a registry of in use correlation id's. Clients send a simple tensor to this backend and get back a dimension [1] tensor containing a new unique correlation id for use with another stateful model.
+
 
 This currently only works with the 1.5.0-dev mainline of the tensorrt-inference-server project.
+
+Tested with Windows, Ubuntu, and OSX (private port) and with Python 2.7 and 3.7
+
+## C++ Interface
+
+TBD.
+
+## Python Interface
+
+Example of using the simple_sequence stateful custom backend.
+Will have the same results as the tensorrt-inference-server stateful client 
+[simple_sequence_client.py](https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/clients/python/simple_sequence_client.py)
+
+```
+from trtis_cidmgr.context import StatefulContext, InferContext, InferRequestHeader
+from numpy import full, int32
+
+values = [0, 11, 7, 5, 3, 2, 0, 1]
+tensors = [[full(shape=[1], fill_value=v, dtype=int32),
+            InferRequestHeader.FLAG_NONE] for v in values]
+tensors[0][1] |= InferRequestHeader.FLAG_SEQUENCE_START
+tensors[-1][1] |= InferRequestHeader.FLAG_SEQUENCE_END
+
+with StatefulContext('localhost:8001', 'simple_sequence') as ctx:
+    for tensor, flags in tensors:
+        result = ctx.run(
+            {'INPUT' : (tensor,)}, 
+            {'OUTPUT': InferContext.ResultFormat.RAW },
+            flags=flags)
+        print(result['OUTPUT'][0][0])
+```
+
+Output:
+```
+0
+11
+18
+23
+26
+28
+28
+29
+```
+
+See the [python code](src/clients/python/trtis_cidmgr/context.py) for more API details (Doc TBD)
 
 ## Building
 You must supply the tensorrt-inference-server builddir with the targets ```trtis-custom-backends``` and ```trtis-clients``` built, following that projects [instructions for building](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/build.html#configure-inference-server).
@@ -20,7 +67,7 @@ This will generate the following directory tree:
 
 * install/
     * 3.5.env/ *- virtualenv with the trtis_cidmgr package and all dependencies*
-    * model/ *- trtserver [model repository](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/model_repository.html)*
+    * model_repository/ *- trtserver [model repository](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/model_repository.html)*
         * cidmgr/
             * [config.pbtxt](src/config.pbtxt.in)
             * 1/
@@ -48,7 +95,7 @@ Running the trtserver
 ```
 $ cd tensorrt-inference-server/builddir/trtis/bin
 $ export LD_LIBRARY_PATH=../lib
-$ ./trtserver --model-store ../../../../trtid_cidmgr/build/install/model
+$ ./trtserver --model-store ../../../../trtid_cidmgr/build/install/model_repository
 ```
 
 Running the simple_sequence custom backend and test with correlation id's from cidmgr

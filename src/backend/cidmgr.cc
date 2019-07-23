@@ -1,9 +1,10 @@
-// Copyright (c) 2019 Doug Napoleone
+// Copyright (c) 2019 Doug Napoleone, All rights reserved.
 
 #include <chrono>
 #include <string>
 #include <thread>
 // I wish tensorrt-inference-server did this properly.
+// This is in it's install directory under include:
 #include "src/backends/custom/custom.h"
 #include "src/core/model_config.h"
 #include "src/core/model_config.pb.h"

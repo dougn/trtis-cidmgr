@@ -1,20 +1,20 @@
 from setuptools import setup, find_packages
-import trtis_cidmgr
+import version
 
 setup(
     name="trtis_cidmgr",
-    version=trtis_cidmgr.__version__,
+    version=version.__version__,
     description="FogBugz API Object Relational Mapper (ORM)",
     long_description=open('README.md').read(),
     url="https://github.com/dougn/trtis-cidmgr/",
-    author=trtis_cidmgr.__author__,
-    author_email=trtis_cidmgr.__email__,
+    author=version.__author__,
+    author_email=version.__email__,
     license="BSD",
     packages=["trtis_cidmgr"],
     entry_points = {
         'console_scripts': [
             'trtis-cidmgr-model=trtis_cidmgr.model:main',
-            ],
+        ],
     },
     classifiers=[
         "Development Status :: 4 - Beta",

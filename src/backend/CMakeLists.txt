@@ -1,3 +1,5 @@
+# Copyright (c) 2019 Doug Napoleone, All rights reserved.
+
 cmake_minimum_required (VERSION 3.10)
 project (cidmgr-backend)
 
@@ -23,21 +25,20 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ##find_package(trtis-custom-backends REQUIRED) 
 
 
-
 set(CODES_PREFIX "namespace dnapoleone { namespace inferenceserver { namespace correlation_id_mgr { namespace backend { typedef enum cidmgr_code_enum {")
 set(CODE_POSTFIX ",")
 set(CODES_POSTFIX "} CIDMGR_Code; }}}}")
 
 set(MODEL_NAME "cidmgr")
 if(WIN32)
-set(SEQUENCE_LIBRARY "sequence.dll")
-set(MODEL_LIBRARY "cidmgr.dll")
+  set(SEQUENCE_LIBRARY "sequence.dll")
+  set(MODEL_LIBRARY "cidmgr.dll")
 elseif(APPLE)
-set(SEQUENCE_LIBRARY "libsequence.dylib")
-set(MODEL_LIBRARY "libcidmgr.dylib")
+  set(SEQUENCE_LIBRARY "libsequence.dylib")
+  set(MODEL_LIBRARY "libcidmgr.dylib")
 else()
-set(SEQUENCE_LIBRARY "libsequence.so")
-set(MODEL_LIBRARY "libcidmgr.so")
+  set(SEQUENCE_LIBRARY "libsequence.so")
+  set(MODEL_LIBRARY "libcidmgr.so")
 endif()
 
 configure_file(../codes.in cidmgr.h)
@@ -60,33 +61,48 @@ if(NOT WIN32)
     cidmgr
     PUBLIC -lpthread
   )
+  if(NOT APPLE)
+    configure_file(libcidmgr.ldscript libcidmgr.ldscript COPYONLY)
+    set_target_properties(
+      cidmgr
+      PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libcidmgr.ldscript
+    )
+    set_target_properties(
+      cidmgr
+      PROPERTIES LINK_FLAGS "-Wl,--version-script libcidmgr.ldscript"
+    )
+  endif()
 endif()
+
+
 target_include_directories(cidmgr PRIVATE ${TRTIS_CUSTOM_BACKEND_INCLUDE} ${CMAKE_CURRENT_BINARY_DIR})
 
+# install/lib
+set(_LIB ${CMAKE_BINARY_DIR}/install/lib/)
+install(
+  TARGETS cidmgr
+  LIBRARY DESTINATION "${_LIB}"
+)
+install(
+  FILES "${TRTIS_CUSTOM_BACKEND_LIBDIR}/${SEQUENCE_LIBRARY}"
+  DESTINATION "${_LIB}"
+)
+
+# install/model_repository
+set(_MODEL_REPOSITORY "${CMAKE_BINARY_DIR}/install/model_repository")
 install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/config.pbtxt"
-  DESTINATION "${CMAKE_BINARY_DIR}/install/model/cidmgr/"
+  DESTINATION "${_MODEL_REPOSITORY}/cidmgr/"
 )
 install(
   TARGETS cidmgr
-  DESTINATION "${CMAKE_BINARY_DIR}/install/model/cidmgr/1/"
-)
-install(
-  TARGETS cidmgr
-  LIBRARY DESTINATION "${CMAKE_BINARY_DIR}/install/lib/"
+  DESTINATION "${_MODEL_REPOSITORY}/cidmgr/1/"
 )
 install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/sequence/config.pbtxt"
-  DESTINATION "${CMAKE_BINARY_DIR}/install/model/simple_sequence/"
+  DESTINATION "${_MODEL_REPOSITORY}/simple_sequence/"
 )
 install(
   FILES "${TRTIS_CUSTOM_BACKEND_LIBDIR}/${SEQUENCE_LIBRARY}"
-  DESTINATION "${CMAKE_BINARY_DIR}/install/model/simple_sequence/1/"
+  DESTINATION "${_MODEL_REPOSITORY}/simple_sequence/1/"
 )
-install(
-  FILES "${TRTIS_CUSTOM_BACKEND_LIBDIR}/${SEQUENCE_LIBRARY}"
-  DESTINATION "${CMAKE_BINARY_DIR}/install/lib/"
-)
-
-
-
