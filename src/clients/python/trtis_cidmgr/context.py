@@ -1,3 +1,4 @@
+# Copyright (c) 2019 Doug Napoleone, All rights reserved.
 from tensorrtserver.api import ProtocolType, InferContext, InferRequestHeader
 import numpy as np
 import contextlib
