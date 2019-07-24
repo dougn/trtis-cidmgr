@@ -1,3 +1,4 @@
+# Copyright (c) 2019 Doug Napoleone, All rights reserved.
 from setuptools import setup, find_packages
 import version
 
