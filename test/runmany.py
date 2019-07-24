@@ -4,7 +4,7 @@ import os
 
 ## silly script to hammer on the server in parallel and cause problems for sequence models.
 
-SCRIPT = "./doug_simple_sequence.py"
+SCRIPT = "./doug_sequence_client.py"
 #SCRIPT = "./simple_sequence_client.py"
 
 def run():

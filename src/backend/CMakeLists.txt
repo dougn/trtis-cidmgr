@@ -3,16 +3,6 @@
 cmake_minimum_required (VERSION 3.10)
 project (cidmgr-backend)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Werror")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 #
 # libcidmgr.so
 #
@@ -28,18 +18,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CODES_PREFIX "namespace dnapoleone { namespace inferenceserver { namespace correlation_id_mgr { namespace backend { typedef enum cidmgr_code_enum {")
 set(CODE_POSTFIX ",")
 set(CODES_POSTFIX "} CIDMGR_Code; }}}}")
-
 set(MODEL_NAME "cidmgr")
-if(WIN32)
-  set(SEQUENCE_LIBRARY "sequence.dll")
-  set(MODEL_LIBRARY "cidmgr.dll")
-elseif(APPLE)
-  set(SEQUENCE_LIBRARY "libsequence.dylib")
-  set(MODEL_LIBRARY "libcidmgr.dylib")
-else()
-  set(SEQUENCE_LIBRARY "libsequence.so")
-  set(MODEL_LIBRARY "libcidmgr.so")
-endif()
+setshared(MODEL_LIBRARY "cidmgr")
+setshared(SEQUENCE_LIBRARY "sequence")
 
 configure_file(../codes.in cidmgr.h)
 configure_file(../config.pbtxt.in config.pbtxt)
@@ -49,10 +30,11 @@ add_library(
   cidmgr SHARED
   cidmgr.cc cidmgr.h
 )
+setstatic(CUSTOMBACKEND "custombackend" "${TRTIS_CUSTOM_BACKEND_LIB}")
 
 target_link_libraries(
   cidmgr
-  PRIVATE ${TRTIS_CUSTOM_BACKEND_LIB}
+  PRIVATE ${CUSTOMBACKEND}
 )
 
 # threading on non-windows
@@ -84,7 +66,7 @@ install(
   LIBRARY DESTINATION "${_LIB}"
 )
 install(
-  FILES "${TRTIS_CUSTOM_BACKEND_LIBDIR}/${SEQUENCE_LIBRARY}"
+  FILES "${TRTIS_CUSTOM_BACKEND_LIB}/${SEQUENCE_LIBRARY}"
   DESTINATION "${_LIB}"
 )
 
@@ -103,6 +85,6 @@ install(
   DESTINATION "${_MODEL_REPOSITORY}/simple_sequence/"
 )
 install(
-  FILES "${TRTIS_CUSTOM_BACKEND_LIBDIR}/${SEQUENCE_LIBRARY}"
+  FILES "${TRTIS_CUSTOM_BACKEND_LIB}/${SEQUENCE_LIBRARY}"
   DESTINATION "${_MODEL_REPOSITORY}/simple_sequence/1/"
 )
