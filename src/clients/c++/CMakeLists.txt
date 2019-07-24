@@ -13,7 +13,6 @@ setshared(MODEL_LIBRARY "cidmgr")
 configure_file(../../codes.in cidmgr_codes.h)
 
 # set up the linking to the request client library.
-##   OMG, trtis has botched the include paths for their client framework SOOOOO BAD!!!
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${TRTIS_BUILDDIR}/trtis-clients
