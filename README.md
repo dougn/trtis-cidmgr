@@ -14,9 +14,9 @@ Tested with Windows, Ubuntu, and OSX (private port) and with Python 2.7 and 3.7
 
 ## C++ Interface
 
-There is a [CIDMgr class](src/clients/c++/cidmgr_client.h) which replaces the normal InferGrpcContext::Create and InferGrpcStream::Create factories. When this CIDMgr instance is deallocated, all CorrelationIDs by that instance will be deleted on the server.
+There is a [CIDMgr class](src/clients/c++/cidmgr_client.h) which replaces the normal ```InferGrpcContext::Create(...)``` and ```InferGrpcStreamContext::Create(...)``` factories, but without the ``CorrelationID correlation_id`` argument. When a CIDMgr instance is deallocated, all CorrelationIDs by that instance will be deleted on the server.
 
-```
+```c++
 #include <cidmgr_client.h>
 
 namespace ni = nvidia::inferenceserver;
@@ -53,7 +53,7 @@ Example of using the simple_sequence stateful custom backend.
 Will have the same results as the tensorrt-inference-server stateful client 
 [simple_sequence_client.py](https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/clients/python/simple_sequence_client.py)
 
-```
+```python
 from trtis_cidmgr import StatefulContext, InferRequestHeader
 from numpy import full, int32
 
@@ -88,7 +88,7 @@ See the [python code](src/clients/python/trtis_cidmgr/context.py) for more API d
 
 ## Building
 You must supply the tensorrt-inference-server builddir with the targets ```trtis-custom-backends``` and ```trtis-clients``` built, following that projects [instructions for building](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/build.html#configure-inference-server).
-```
+```bash
 $ mkdir build
 $ cmake .. -DTRTIS_BUILDDIR=../../tensorrt-inference-server/builddir
 $ make install
@@ -124,7 +124,7 @@ This will generate the following directory tree:
 
 Running the trtserver
 
-```
+```bash
 $ cd tensorrt-inference-server/builddir/trtis/bin
 $ export LD_LIBRARY_PATH=../lib
 $ ./trtserver --model-store ../../../../trtid_cidmgr/build/install/model_repository
@@ -132,7 +132,7 @@ $ ./trtserver --model-store ../../../../trtid_cidmgr/build/install/model_reposit
 
 Running the simple_sequence custom backend and test with correlation id's from cidmgr
 
-```
+```bash
 $ cd trtis-cidmgr/test
 $ source ../build/install/3.7.env/bin/activate
 $ cd test
@@ -153,7 +153,7 @@ Removing managed Correlation ID: 1
 ```
 
 Running 50 simple_sequence model clients in parallel with correlation id's from cidmgr
-```
+```bash
 $ cd trtis-cidmgr/test
 $ source ../build/install/3.7.env/bin/activate
 $ python ./runmany.py
@@ -161,7 +161,7 @@ $ python ./runmany.py
 
 Running the [cidmgr_sequence_client](src/clients/c++/cidmgr_sequence_client.cc) c++ client
 
-```
+```bash
 $ cd trtis-cidmgr/build/install/bin
 $ export LD_LIBRARY_PATH=../lib
 $ ./cidmgr_sequence_client
