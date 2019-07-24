@@ -1,7 +1,7 @@
+# Copyright (c) 2019 Doug Napoleone, All rights reserved.
 
 #pragma once
 
-// Why trtis? WHY?
 #include <src/clients/c++/request.h>
 
 namespace ni = nvidia::inferenceserver;
