@@ -1,4 +1,4 @@
-
+// Copyright (c) 2019 Doug Napoleone, All rights reserved.
 
 #include "cidmgr_client.h"
 #include <cidmgr_codes.h>
