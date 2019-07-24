@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Doug Napoleone, All rights reserved.
+// Copyright (c) 2019 Doug Napoleone, All rights reserved.
 
 #pragma once
 
