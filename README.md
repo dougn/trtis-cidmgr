@@ -1,7 +1,7 @@
 # trtis-cidmgr
  Custom backend and client libraries for the NVIDIA TensorRT-Inference-Server to manage unique Correlation ID's
 
-The [NNIDIA TensorRT Inference Server](https://github.com/NVIDIA/tensorrt-inference-server) has an issue with [stateful models](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/models_and_schedulers.html#stateful-models).
+The [NVIDIA TensorRT Inference Server](https://github.com/NVIDIA/tensorrt-inference-server) has an issue with [stateful models](https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/models_and_schedulers.html#stateful-models).
 The client API requires specifying a Correlation ID (a.k.a. Instance ID), which must be unique to the state. So if you are performing multiple inferences in parallel which have unique state, you need a unique id for each. It is up to the multiple clients (which may be on different machines) to coordinate the Correlation ID management. This is something the inference server should provide, as it is already a coordination point.
 
 
