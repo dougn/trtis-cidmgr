@@ -57,7 +57,9 @@ if(NOT WIN32)
 endif()
 
 
-target_include_directories(cidmgr PRIVATE ${TRTIS_CUSTOM_BACKEND_INCLUDE} ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(
+  cidmgr 
+  PRIVATE ${TRTIS_CUSTOM_BACKEND_INCLUDE} ${CMAKE_CURRENT_BINARY_DIR})
 
 # install/lib
 set(_LIB ${CMAKE_BINARY_DIR}/install/lib/)

@@ -3,16 +3,15 @@
 #include <chrono>
 #include <string>
 #include <thread>
-// I wish tensorrt-inference-server did this properly.
-// This is in it's install directory under include:
-#include "src/backends/custom/custom.h"
-#include "src/core/model_config.h"
-#include "src/core/model_config.pb.h"
+
+#include "src/custom/sdk/custom_instance.h"
 
 #include "cidmgr.h"
 
 namespace ni = nvidia::inferenceserver;
-//namespace nic = nvidia::inferenceserver::custom;
+namespace nic = nvidia::inferenceserver::custom;
+namespace dicb = dnapoleone::inferenceserver::correlation_id_mgr::backend;
+
 
 #define LOG_ERROR std::cerr
 #define LOG_INFO std::cout
@@ -56,38 +55,13 @@ namespace ni = nvidia::inferenceserver;
 namespace dnapoleone { namespace inferenceserver { namespace correlation_id_mgr {
 namespace backend {
 
-// Integer error codes. TRTIS requires that success must be 0. All
-// other codes are interpreted by TRTIS as failures.
-enum ErrorCodes {
-  kSuccess,
-  kUnknown,
-  kInvalidModelConfig,
-  kGpuNotSupported,
-  kSequenceBatcher,
-  kModelControl,
-  kSequenceIdle,
-  kInputOutput,
-  kInputName,
-  kOutputName,
-  kInputOutputDataType,
-  kInputContents,
-  kInputSize,
-  kOutputBuffer,
-  kBatchNotOne,
-  kTimesteps,
-  kInvalidId,
-  kInvalidCode,
-  kOutOfIDS,
-  kDeleteWhileActive
-};
-
 // Context object. All state must be kept in this object.
-class Context {
+class Context: public nic::CustomInstance {
  public:
   Context(
       const std::string& instance_name, const ni::ModelConfig& config,
       const int gpu_device);
-  ~Context();
+  virtual ~Context();
 
   // Initialize the context. Validate that the model configuration,
   // etc. is something that we can handle.
@@ -104,7 +78,7 @@ class Context {
   // No longer in use, created id's
   uint64_t Inactive() const { return (uint64_t)available_.size(); }
   // Peak number of contexts in use at one time
-  uint64_t Peak() const { return next_correlation_id_; }
+  uint64_t Peak() const { return next_correlation_id_-1; }
 
  private:
   int GetInputTensor(
@@ -117,30 +91,59 @@ class Context {
   // clear an already registered correlation id.
   int ClearCorrelationID(uint64_t id);
 
-
-  // The name of this instance of the backend.
-  const std::string instance_name_;
-
-  // The model configuration.
-  const ni::ModelConfig model_config_;
-
-  // The GPU device ID to execute on or CUSTOM_NO_GPU_DEVICE if should
-  // execute on CPU.
-  const int gpu_device_;
-
   // registry of active ID's.
   std::unordered_set<uint64_t> reserved_;
   std::set<uint64_t> available_;
   uint64_t next_correlation_id_;
+
+ public:
+    static const int kSuccess = nic::ErrorCodes::Success;
+
+    const int kInvalidModelConfig = RegisterError(
+      "invalid model configuration");
+    const int kGpuNotSupported = RegisterError(
+      "execution on GPU not supported");
+    const int kSequenceBatcher = RegisterError(
+      "model configuration must configure sequence batcher");
+    const int kModelControl = RegisterError(
+      "'START' and 'READY' must be configured as the control inputs");
+    const int kSequenceIdle = RegisterError(
+      "model max_sequence_idle_microseconds is set below the minimum " 
+      QUOTE(MIN_SEQUENCE_IDLE));
+    const int kInputOutput = RegisterError(
+      "model must have two inputs and one output with shape [1]");
+    const int kInputName = RegisterError(
+      "model inputs must be named 'CODE' and 'CORRELATION_ID'");
+    const int kOutputName = RegisterError(
+      "model output must be named 'OUTPUT'");
+    const int kInputOutputDataType = RegisterError(
+      "model inputs and output must have TYPE_INT32 data-type");
+    const int kInputContents = RegisterError(
+      "unable to get input tensor values");
+    const int kInputSize = RegisterError(
+      "unexpected size for input tensor");
+    const int kOutputBuffer = RegisterError(
+      "unable to get buffer for output tensor values");
+    const int kBatchNotOne = RegisterError(
+      "max-batch-size must be set to 1");
+    const int kTimesteps = RegisterError(
+      "unable to execute more than 1 timestep at a time");
+    const int kInvalidId = RegisterError(
+      "invalid CORRELATION_ID given for deletion");
+    const int kInvalidCode = RegisterError(
+      "unknwon input CODE");
+    const int kOutOfIDS = RegisterError(
+      "out of calid correlation id space); clients leaking");
+    const int kDeleteWhileActive = RegisterError(
+      "deleting corelation id mgr context while there are active contexts");
 
 };
 
 Context::Context(
     const std::string& instance_name, const ni::ModelConfig& model_config,
     const int gpu_device)
-    : instance_name_(instance_name), model_config_(model_config),
-      gpu_device_(gpu_device), reserved_(), available_(), 
-      next_correlation_id_(1)
+    : CustomInstance(instance_name, model_config, gpu_device),
+      reserved_(), available_(), next_correlation_id_(1)
 {
 }
 
@@ -459,113 +462,29 @@ Context::Execute(
   return kSuccess;
 }
 
+}}}}  // namespace dnapoleone::inferenceserver::correlation_id_mgr::backend
+
+
 /////////////
 
-extern "C" {
+namespace nvidia { namespace inferenceserver { namespace custom {
 
 int
-CustomInitialize(const CustomInitializeData* data, void** custom_context)
+CustomInstance::Create(
+    CustomInstance** instance, const std::string& name,
+    const ModelConfig& model_config, int gpu_device,
+    const CustomInitializeData* data)
 {
-  // Convert the serialized model config to a ModelConfig object.
-  ni::ModelConfig model_config;
-  if (!model_config.ParseFromString(std::string(
-          data->serialized_model_config, data->serialized_model_config_size))) {
-    return kInvalidModelConfig;
+  dicb::Context* context = 
+    new dicb::Context(name, model_config, gpu_device);
+
+  *instance = context;
+
+  if (context == nullptr) {
+    return ErrorCodes::CreationFailure;
   }
 
-  // Create the context and validate that the model configuration is
-  // something that we can handle.
-  Context* context = new Context(
-      std::string(data->instance_name), model_config, data->gpu_device_id);
-  int err = context->Init();
-  if (err != kSuccess) {
-    return err;
-  }
-
-  *custom_context = static_cast<void*>(context);
-
-  return kSuccess;
+  return context->Init();
 }
 
-int
-CustomFinalize(void* custom_context)
-{
-  int err = kSuccess;
-  if (custom_context != nullptr) {
-    Context* context = static_cast<Context*>(custom_context);
-    std::cout << "Deleting Correlation ID Mgr Context with " << 
-      context->Active() << " active id's" << std::endl;
-    if (context->Active()) {
-      err = kDeleteWhileActive;
-    }
-    delete context;
-  }
-
-  return kSuccess;
-}
-
-const char*
-CustomErrorString(void* custom_context, int errcode)
-{
-  switch (errcode) {
-    case kSuccess:
-      return "success";
-    case kInvalidModelConfig:
-      return "invalid model configuration";
-    case kGpuNotSupported:
-      return "execution on GPU not supported";
-    case kSequenceBatcher:
-      return "model configuration must configure sequence batcher";
-    case kModelControl:
-      return "'START' and 'READY' must be configured as the control inputs";
-    case kSequenceIdle:
-      return "model max_sequence_idle_microseconds is set below the minimum " QUOTE(MIN_SEQUENCE_IDLE);
-    case kInputOutput:
-      return "model must have two inputs and one output with shape [1]";
-    case kInputName:
-      return "model inputs must be named 'CODE' and 'CORRELATION_ID'";
-    case kOutputName:
-      return "model output must be named 'OUTPUT'";
-    case kInputOutputDataType:
-      return "model inputs and output must have TYPE_INT32 data-type";
-    case kInputContents:
-      return "unable to get input tensor values";
-    case kInputSize:
-      return "unexpected size for input tensor";
-    case kOutputBuffer:
-      return "unable to get buffer for output tensor values";
-    case kBatchNotOne:
-      return "max-batch-size must be set to 1";
-    case kTimesteps:
-      return "unable to execute more than 1 timestep at a time";
-    case kInvalidId:
-      return "invalid CORRELATION_ID given for deletion";
-    case kInvalidCode:
-      return "unknwon input CODE";
-    case kOutOfIDS:
-      return "out of calid correlation id space; clients leaking";
-    case kDeleteWhileActive:
-      return "deleting corelation id mgr context while there are active contexts";
-    default:
-      break;
-  }
-
-  return "unknown error";
-}
-
-int
-CustomExecute(
-    void* custom_context, const uint32_t payload_cnt, CustomPayload* payloads,
-    CustomGetNextInputFn_t input_fn, CustomGetOutputFn_t output_fn)
-{
-  if (custom_context == nullptr) {
-    return kUnknown;
-  }
-
-  Context* context = static_cast<Context*>(custom_context);
-  return context->Execute(payload_cnt, payloads, input_fn, output_fn);
-}
-
-}  // extern "C"
-
-}}}}  // namespace dnapoleone::inferenceserver::correlation_id_mgr::backend
+}}} // nvidia::inferenceserver::custom

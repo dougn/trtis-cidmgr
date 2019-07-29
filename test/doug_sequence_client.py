@@ -121,7 +121,7 @@ if __name__ == '__main__':
         result0_list = []
         result1_list = []
 
-        if FLAGS.async:
+        if getattr(FLAGS, 'async'):
             request0_ids = []
             request1_ids = []
 
