@@ -127,7 +127,7 @@ Running the trtserver
 ```bash
 $ cd tensorrt-inference-server/builddir/trtis/bin
 $ export LD_LIBRARY_PATH=../lib
-$ ./trtserver --model-store ../../../../trtid_cidmgr/build/install/model_repository
+$ ./trtserver --model-repository ../../../../../trtis-cidmgr/build/install/model_repository/
 ```
 
 Running the simple_sequence custom backend and test with correlation id's from cidmgr
