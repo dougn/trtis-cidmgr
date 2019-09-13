@@ -5,7 +5,7 @@ import version
 setup(
     name="trtis_cidmgr",
     version=version.__version__,
-    description="FogBugz API Object Relational Mapper (ORM)",
+    description="TensorRT Inference Server CorrelationID Manager Custom Backend Client",
     long_description=open('README.md').read(),
     url="https://github.com/dougn/trtis-cidmgr/",
     author=version.__author__,

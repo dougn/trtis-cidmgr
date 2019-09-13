@@ -111,7 +111,6 @@ This will generate the following directory tree:
         * cidmgr_sequence_client *- tensorrt-inference-server simple_sequence_client modified to use cidmgr*
     * lib/
         * libcidmgr.so *- custom backend*
-        * librequest.so *- tensorrt-inference-server client library*
         * libcidmgr_client.a *- cidmgr client helper library*
         * libsequence.so *- tensorrt-inference-server custom sequence backend*
     * include/
