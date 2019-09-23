@@ -28,8 +28,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "src/clients/c++/request_grpc.h"
-#include "src/clients/c++/request_http.h"
+#include "request_grpc.h"
+#include "request_http.h"
 #include "cidmgr_client.h"
 
 namespace ni = nvidia::inferenceserver;

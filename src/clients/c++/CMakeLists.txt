@@ -42,14 +42,10 @@ configure_file(../../codes.in cidmgr_codes.h)
 # set up the linking to the request client library.
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${TRTIS_BUILDDIR}/trtis-clients
-  ${TRTIS_BUILDDIR}/..
-  ${TRTIS_BUILDDIR}/protobuf/include/
+  ${TRTIS_CLIENT_INCLUDE}
 )
 link_directories(
   ${TRTIS_CLIENT_LIB}
-  ${TRTIS_BUILDDIR}/protobuf/lib/
-  ${TRTIS_BUILDDIR}/grpc/lib/
 )
 
 #

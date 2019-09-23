@@ -2,7 +2,7 @@
 
 #include "cidmgr_client.h"
 #include <cidmgr_codes.h>
-#include <src/clients/c++/request_grpc.h>
+#include <request_grpc.h>
 
 namespace ni = nvidia::inferenceserver;
 namespace nic = nvidia::inferenceserver::client;
