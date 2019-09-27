@@ -8,7 +8,7 @@ The client API requires specifying a Correlation ID (a.k.a. Instance ID), which 
 This custom backend and helper clients use the inference server framework to manage the distribution and management of unique correlation id's for clients. The backend is it's self a stateful model holding a registry of in use correlation id's. Clients send a simple tensor to this backend and get back a dimension [1] tensor containing a new unique correlation id for use with another stateful model.
 
 
-This currently only works with the 1.5.0-dev mainline of the tensorrt-inference-server project.
+This currently only works with the 1.7.0-dev mainline of the tensorrt-inference-server project.
 
 Tested with Windows, Ubuntu, and OSX (private port) and with Python 2.7 and 3.7
 
