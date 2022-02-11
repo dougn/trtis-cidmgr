@@ -31,7 +31,7 @@ setup(
     ],
     install_requires=[
         'numpy',
-        'protobuf==3.6.0', # limit to 3.6 or things break.
+        'protobuf==3.15.0', # limit to 3.6 or things break.
         'grpcio==1.19.0', # limit to 1.19 due to trtserver issues
         'grpcio-tools==1.19.0', # limit to 1.19 due to trtserver issues
         'tensorrtserver>=1.5.0.dev0'],
